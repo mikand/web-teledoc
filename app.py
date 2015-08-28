@@ -57,6 +57,13 @@ def command_right():
     c.step_right()
     return "done"
 
+@app.route('/command_fire')
+def command_fire():
+    """Up command route."""
+    c = LauncherController()
+    c.fire()
+    return "done"
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True)
