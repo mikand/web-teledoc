@@ -1,0 +1,76 @@
+<html>
+  <head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+    <title>Web TeleDOC</title>
+
+    <script type="text/javascript">
+      $(function(){
+         $('#toggle_camera').on('click', function(e) {
+            if ($("#camera").attr("src") == "") {
+               $("#camera").attr("src", "{{ url_for('video_feed') }}");
+            }
+            else {
+               $("#camera").attr("src", "");
+            }
+         });
+
+         $(function(){
+            $('#up').on('click', function(e) {
+               $.get("{{ url_for('command_up') }}", function( data ) {});
+            });
+         });
+
+         $(function(){
+            $('#down').on('click', function(e) {
+               $.get("{{ url_for('command_down') }}", function( data ) {});
+            });
+         });
+
+         $(function(){
+            $('#left').on('click', function(e) {
+               $.get("{{ url_for('command_left') }}", function( data ) {});
+            });
+         });
+
+         $(function(){
+            $('#right').on('click', function(e) {
+               $.get("{{ url_for('command_right') }}", function( data ) {});
+            });
+         });
+
+         $(document).keydown(function(e) {
+            switch(e.which) {
+               case 37: // left
+               $.get("{{ url_for('command_left') }}", function( data ) {});
+               break;
+
+               case 38: // up
+               $.get("{{ url_for('command_up') }}", function( data ) {});
+               break;
+
+               case 39: // right
+               $.get("{{ url_for('command_right') }}", function( data ) {});
+               break;
+
+               case 40: // down
+               $.get("{{ url_for('command_down') }}", function( data ) {});
+               break;
+
+               default: return; // exit this handler for other keys
+            }
+            e.preventDefault(); // prevent the default action (scroll / move caret)
+         });
+      });
+    </script>
+  </head>
+  <body>
+    <h1>Web TeleDOC</h1>
+    <img id="camera" src="" width="512" height="384" border="2" />
+    <br />
+    <input id="toggle_camera" name="toggle_camera" type="button" value="Toggle Camera" \>
+    <input id="up" name="up" type="button" value="Up" \>
+    <input id="down" name="down" type="button" value="Down" \>
+    <input id="left" name="left" type="button" value="Left" \>
+    <input id="right" name="right" type="button" value="Right" \>
+  </body>
+</html>
