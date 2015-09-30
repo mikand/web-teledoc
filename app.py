@@ -1,12 +1,11 @@
 #!/usr/bin/env python
-
 from flask import Flask, render_template, Response
+from flask import request
 
 from camera import Camera
 from controller import LauncherController
 
 app = Flask(__name__)
-
 
 @app.route('/')
 def index():
@@ -29,41 +28,25 @@ def video_feed():
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
 
-@app.route('/command_up')
-def command_up():
-    """Up command route."""
+@app.route('/command', methods=["POST"])
+def command():
+    """command route."""
+    command_id = request.form["command_id"]
     c = LauncherController()
-    c.step_up()
-    return "done"
-
-@app.route('/command_down')
-def command_down():
-    """Up command route."""
-    c = LauncherController()
-    c.step_down()
-    return "done"
-
-@app.route('/command_left')
-def command_left():
-    """Left command route."""
-    c = LauncherController()
-    c.step_left()
-    return "done"
-
-@app.route('/command_right')
-def command_right():
-    """Up command route."""
-    c = LauncherController()
-    c.step_right()
-    return "done"
-
-@app.route('/command_fire')
-def command_fire():
-    """Up command route."""
-    c = LauncherController()
-    c.fire()
+    if command_id == "up":
+        c.step_up()
+    elif command_id == "down":
+        c.step_down()
+    elif command_id == "left":
+        c.step_left()
+    elif command_id == "right":
+        c.step_right()
+    elif command_id == "fire":
+        c.fire()
+    else:
+        raise KeyError("Unknown command provided")
     return "done"
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', debug=True)
+    app.run(host='0.0.0.0', debug=False, threaded=True)

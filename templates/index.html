@@ -4,6 +4,10 @@
     <title>Web TeleDOC</title>
 
     <script type="text/javascript">
+      function send_command(cmd) {
+         $.post("{{ url_for('command') }}", {"command_id" : cmd}, function( data ) {});
+      }
+
       $(function(){
          $('#toggle_camera').on('click', function(e) {
             if ($("#camera").attr("src") == "") {
@@ -16,56 +20,56 @@
 
          $(function(){
             $('#up').on('click', function(e) {
-               $.get("{{ url_for('command_up') }}", function( data ) {});
+               send_command("up");
             });
          });
 
          $(function(){
             $('#down').on('click', function(e) {
-               $.get("{{ url_for('command_down') }}", function( data ) {});
+               send_command("down");
             });
          });
 
          $(function(){
             $('#left').on('click', function(e) {
-               $.get("{{ url_for('command_left') }}", function( data ) {});
+               send_command("left");
             });
          });
 
          $(function(){
             $('#right').on('click', function(e) {
-               $.get("{{ url_for('command_right') }}", function( data ) {});
+               send_command("right");
             });
          });
 
          $(function(){
             $('#fire').on('click', function(e) {
-               $.get("{{ url_for('command_fire') }}", function( data ) {});
+               send_command("fire");
             });
          });
 
          $(document).keydown(function(e) {
             switch(e.which) {
                case 37: // left
-               $.get("{{ url_for('command_left') }}", function( data ) {});
+               send_command("left");
                break;
 
                case 38: // up
-               $.get("{{ url_for('command_up') }}", function( data ) {});
+               send_command("up");
                break;
 
                case 39: // right
-               $.get("{{ url_for('command_right') }}", function( data ) {});
+               send_command("right");
                break;
 
                case 40: // down
-               $.get("{{ url_for('command_down') }}", function( data ) {});
+               send_command("down");
                break;
 
                case 13: // enter
                case 32: // space
                case 70: // 'f'
-               $.get("{{ url_for('command_fire') }}", function( data ) {});
+               send_command("fire");
                break;
 
                default: return; // exit this handler for other keys

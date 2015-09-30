@@ -26,4 +26,5 @@ class Camera(object):
             else:
                 return None
         else:
+            assert False
             return None
