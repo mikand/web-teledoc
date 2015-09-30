@@ -2,12 +2,15 @@
 from flask import Flask, render_template, Response
 from flask import request
 
+from utils import requires_auth
+
 from camera import Camera
 from controller import LauncherController
 
 app = Flask(__name__)
 
 @app.route('/')
+@requires_auth
 def index():
     """Video streaming home page."""
     return render_template('index.html')
@@ -22,6 +25,7 @@ def gen(camera):
 
 
 @app.route('/video_feed')
+@requires_auth
 def video_feed():
     """Video streaming route."""
     return Response(gen(Camera()),
@@ -29,6 +33,7 @@ def video_feed():
 
 
 @app.route('/command', methods=["POST"])
+@requires_auth
 def command():
     """command route."""
     command_id = request.form["command_id"]
