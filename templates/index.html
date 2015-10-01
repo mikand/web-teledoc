@@ -1,7 +1,37 @@
 <html>
   <head>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css"/>
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+
     <title>Web TeleDOC</title>
+
+    <style type="text/css">
+      .center {
+        float: none;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .cameraContainer {
+        position: relative;
+        width: 100%;
+        padding-bottom: 75%;
+        float: left;
+        height: 0;
+      }
+
+      .camera {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        left: 0;
+      }
+    </style>
 
     <script type="text/javascript">
       function send_command(cmd) {
@@ -79,20 +109,44 @@
       });
     </script>
   </head>
-  <body>
-    <h1>Web TeleDOC</h1>
-    <div width="512" style="position: relative;">
-      <img id="camera" src="" width="512" height="384" border="2" style="z-index: -1" />
-      <div style="position:absolute; left:0px;top:0px; font-size: 50px;width: 512px; height: 384px; text-align: center; line-height: 384px;">
-        +
-      </div>
-    </div>
+  <body style="background-color: #CCCCCC">
     <br />
-    <input id="toggle_camera" name="toggle_camera" type="button" value="Toggle Camera" \>
-    <input id="up" name="up" type="button" value="Up" \>
-    <input id="down" name="down" type="button" value="Down" \>
-    <input id="left" name="left" type="button" value="Left" \>
-    <input id="right" name="right" type="button" value="Right" \>
-    <input id="fire" name="fire" type="button" value="Fire" \>
+    <div class="container">
+      <div class="row">
+        <div class="col-md-8">
+          <div class="cameraContainer">
+            <div class="camera">
+              <img id="camera" class="camera" src="" style="z-index: -1; border-style: solid;
+    border-width: 3px; border-color: #444444; background-color: #DDDDDD;" />
+              <div style="position:absolute; top: 50%; left: 50%; font-size: 50px; margin-left: -25px; margin-top: -25px;">+</div>
+            </div>
+          </div>
+          <input id="toggle_camera" name="toggle_camera" style="width: 100%" type="button" value="Toggle Camera" class="btn btn-primary" \>
+        </div>
+
+        <div class="col-md-1" height="40px">
+          &nbsp;
+        </div>
+
+        <div class="col-md-3">
+          <table border="0" class="center" width="100%">
+            <tr>
+              <td width="33%">&nbsp;</td>
+              <td width="33%"><input style="width: 100%" class="btn btn-lg btn-success"  id="up" name="up" type="button" value="Up" \></td>
+              <td width="33%">&nbsp;</td>
+            <tr>
+            <tr>
+              <td width="33%"><input style="width: 100%" class="btn btn-lg btn-success"  id="left" name="left" type="button" value="Left" \></td>
+              <td width="33%"><input style="width: 100%" class="btn btn-lg btn-danger"  id="fire" name="fire" type="button" value="Fire" \></td>
+              <td width="33%"><input style="width: 100%" class="btn btn-lg btn-success"  id="right" name="right" type="button" value="Right" \></td>
+            <tr>
+            <tr>
+              <td width="33%">&nbsp;</td>
+              <td width="33%"><input style="width: 100%" class="btn btn-lg btn-success"  id="down" name="down" type="button" value="Down" \></td>
+              <td width="33%">&nbsp;</td>
+            <tr>
+          </table>
+        </div>
+      </div><!-- /.container -->
   </body>
 </html>
