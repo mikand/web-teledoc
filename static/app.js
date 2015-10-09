@@ -23,8 +23,8 @@
 
         ctx.drawImage(img, 0, 0, stream.canvas.width, stream.canvas.height);
 
-        var size = 20;
-        var lw = 5;
+        var size = 30;
+        var lw = 3;
         var cx = stream.canvas.width / 2;
         var cy = stream.canvas.height / 2;
 
@@ -37,6 +37,11 @@
         ctx.beginPath();
         ctx.moveTo(cx, cy + size);
         ctx.lineTo(cx, cy - size);
+        ctx.lineWidth = lw;
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.arc(cx, cy, size*2/3, 0, 2 * Math.PI, false);
         ctx.lineWidth = lw;
         ctx.stroke();
 
