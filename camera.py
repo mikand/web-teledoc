@@ -29,7 +29,7 @@ class Camera(object):
     def _thread(cls):
         cam = cv.CaptureFromCAM(0)
         while True:
-            image = cv.QueryFrame(self.video)
+            image = cv.QueryFrame(cam)
             cv.SaveImage("/dev/shm/frame.jpg", image)
             with open("/dev/shm/frame.jpg") as f:
                 cls.frame = f.read()
@@ -39,5 +39,4 @@ class Camera(object):
                 if time.time() - cls.last_access > 10:
                     break
             time.sleep(1.0 / 30.0)
-        cam.release()
         cls.thread = None
