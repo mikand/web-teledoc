@@ -1,15 +1,27 @@
 #!/usr/bin/env python
+from __future__ import unicode_literals
+
 import time
+import base64
+import logging
 
-from flask import Flask, render_template, Response
-from flask import request
-
+from flask import Flask, render_template, Response, request
+from flask.ext.socketio import SocketIO, emit
 from utils import requires_auth
 
 from camera import Camera
 from controller import LauncherController
 
 app = Flask(__name__)
+socketio = SocketIO(app)
+
+cameras = {}
+
+stream_handler = logging.StreamHandler()
+stream_handler.setLevel(logging.INFO)
+app.logger.addHandler(stream_handler)
+
+camera = Camera()
 
 @app.route('/')
 @requires_auth
@@ -17,23 +29,15 @@ def index():
     """Video streaming home page."""
     return render_template('index.html')
 
+@socketio.on('stream')
+def stream(foo):
+    data = {
+        'id': 0,
+        'raw': 'data:image/jpeg;base64,' + base64.b64encode(camera.get_frame()),
+        'timestamp': time.time()
+    }
 
-def gen(camera):
-    """Video streaming generator function."""
-    while True:
-        frame = camera.get_frame()
-        yield (b'--frame\r\n'
-               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
-        time.sleep(0.05)
-
-
-@app.route('/video_feed')
-@requires_auth
-def video_feed():
-    """Video streaming route."""
-    return Response(gen(Camera()),
-                    mimetype='multipart/x-mixed-replace; boundary=frame')
-
+    emit('frame', data)
 
 @app.route('/command', methods=["POST"])
 @requires_auth
@@ -55,6 +59,7 @@ def command():
         raise KeyError("Unknown command provided")
     return "done"
 
-
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', debug=False, threaded=True)
+    socketio.run(app, host='0.0.0.0', port=5000,
+                 policy_server=False,
+                 transports='websocket, xhr-polling, xhr-multipart')

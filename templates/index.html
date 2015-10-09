@@ -39,15 +39,6 @@
       }
 
       $(function(){
-         $('#toggle_camera').on('click', function(e) {
-            if ($("#camera").attr("src") == "") {
-               $("#camera").attr("src", "{{ url_for('video_feed') }}");
-            }
-            else {
-               $("#camera").attr("src", "");
-            }
-         });
-
          $(function(){
             $('#up').on('click', function(e) {
                send_command("up");
@@ -114,15 +105,14 @@
     <div class="container">
       <div class="row">
         <div class="col-md-8">
+          <h5><small><span id="fps_counter"></span> fps</small></h5>
           <div class="cameraContainer">
-            <div class="camera">
-              <img id="camera" class="camera" src="" style="z-index: -1; border-style: solid;
-    border-width: 3px; border-color: #444444; background-color: #DDDDDD;" />
-              <div style="position:absolute; top: 50%; left: 50%; font-size: 50px; margin-left: -25px; margin-top: -25px;">+</div>
+            <div data-id="0" class="camera stream">
+              <canvas width="800" height="600" id="camera_canvas" class="camera"></canvas>
             </div>
           </div>
-          <input id="toggle_camera" name="toggle_camera" style="width: 100%" type="button" value="Toggle Camera" class="btn btn-primary" \>
         </div>
+
 
         <div class="col-md-1" height="40px">
           &nbsp;
@@ -148,5 +138,8 @@
           </table>
         </div>
       </div><!-- /.container -->
+
+    <script src="{{ url_for('static', filename='socketio.js') }}"></script>
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
   </body>
 </html>
