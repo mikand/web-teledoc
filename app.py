@@ -3,7 +3,6 @@
 from __future__ import unicode_literals
 
 import time
-import base64
 import logging
 
 from flask import Flask, render_template, Response, request
@@ -34,7 +33,7 @@ def index():
 def stream(foo):
     data = {
         'id': 0,
-        'raw': 'data:image/jpeg;base64,' + base64.b64encode(camera.get_frame()),
+        'raw': 'data:image/jpeg;base64,' + camera.get_frame_base64(),
         'timestamp': time.time()
     }
 

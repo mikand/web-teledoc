@@ -50,3 +50,12 @@ class LauncherController(object):
         self.right()
         time.sleep(0.05)
         self.stop()
+
+if __name__ == "__main__":
+    print("Demoing Launcher")
+    lc = LauncherController()
+    for f in [lc.step_up, lc.step_down, lc.step_left, lc.step_right]:
+        for i in xrange(10):
+            f()
+            time.sleep(0.5)
+    lc.fire()

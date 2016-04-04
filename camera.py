@@ -3,6 +3,7 @@
 import time
 import io
 import threading
+import base64
 
 CV_VER = 2
 try:
@@ -31,6 +32,10 @@ class Camera(object):
         self.initialize()
         return self.frame
 
+    def get_frame_base64(self):
+        f = self.get_frame()
+        return base64.b64encode(f)
+    
     @classmethod
     def _thread(cls):
         if CV_VER == 2:
@@ -69,3 +74,10 @@ class Camera(object):
                 time.sleep(1.0 / 30.0)
 
         cls.thread = None
+
+
+if __name__ == "__main__":
+    print("Testing Camera connection...")
+    c = Camera()
+    print(c.get_frame_base64())
+    exit(0)
