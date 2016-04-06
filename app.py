@@ -22,6 +22,8 @@ stream_handler.setLevel(logging.INFO)
 app.logger.addHandler(stream_handler)
 
 camera = Camera()
+launcher = LauncherController()
+
 
 @app.route('/')
 @requires_auth
@@ -44,7 +46,7 @@ def stream(foo):
 def command():
     """command route."""
     command_id = request.form["command_id"]
-    c = LauncherController()
+    c = launcher
     if command_id == "up":
         c.step_up()
     elif command_id == "down":
