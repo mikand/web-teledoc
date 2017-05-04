@@ -32,9 +32,9 @@ def index():
     return render_template('index.html')
 
 @socketio.on('stream')
-def stream(foo):
+def stream(stream_id):
     data = {
-        'id': 0,
+        'id': stream_id,
         'raw': 'data:image/jpeg;base64,' + camera.get_frame_base64(),
         'timestamp': time.time()
     }

@@ -1,19 +1,24 @@
 function makeStream(io, canvas_id, fps_id, stream_id) {
-    socket = io.connect();
-
-    var canvas = $("#" + canvas_id)[0];
-
     stream = {
+        id: stream_id,
         startTime: new Date().getTime(),
         frameCt: 0,
-        fps: $("#" + canvas_id)[0],
-        context: canvas.getContext('2d'),
-        canvas: canvas,
+        fps: $("#" + fps_id)[0],
+        context: $("#" + canvas_id)[0].getContext('2d'),
+        canvas: $("#" + canvas_id)[0]
     };
+
+    return stream;
+}
+
+function launchStreams(io, streams) {
+    socket = io.connect();
 
     socket.on('frame', function ( data ) {
         // Each time we receive an image, request a new one
-        socket.emit( 'stream', data.id );
+        socket.emit('stream', data.id);
+
+        stream = streams[data.id];
 
         img = new Image();
         img.src = data.raw;
@@ -47,24 +52,29 @@ function makeStream(io, canvas_id, fps_id, stream_id) {
         stream.frameCt++;
     });
 
+    for (var k in streams) {
+        socket.emit('stream', k);
 
-    socket.emit('stream', 0);
+        stream = streams[k];
+        // Update fps (loop)
+        setInterval( function () {
+            d = new Date().getTime(),
+            currentTime = ( d - stream.startTime ) / 1000,
+            result = Math.floor( ( stream.frameCt / currentTime ) );
 
-    // Update fps (loop)
-    setInterval( function () {
-        d = new Date().getTime(),
-        currentTime = ( d - stream.startTime ) / 1000,
-        result = Math.floor( ( stream.frameCt / currentTime ) );
+            if ( currentTime > 1 ) {
+                stream.startTime = new Date().getTime();
+                stream.frameCt = 0;
+            }
 
-        if ( currentTime > 1 ) {
-            stream.startTime = new Date().getTime();
-            stream.frameCt = 0;
-        }
-
-        stream.fps.innerText = result;
-    }, 100 );
-
+            stream.fps.innerText = result;
+        }, 100 );
+    }
 }
 
-makeStream(io, "camera_canvas_1", "fps_counter_1", "0");
-makeStream(io, "camera_canvas_2", "fps_counter_2", "0");
+streams = {
+    0 : makeStream(io, "camera_canvas_1", "fps_counter_1", 0),
+    1 : makeStream(io, "camera_canvas_2", "fps_counter_2", 1);
+};
+
+launchStreams(io, streams);
