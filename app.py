@@ -6,7 +6,7 @@ import time
 import logging
 
 from flask import Flask, render_template, Response, request
-from flask.ext.socketio import SocketIO, emit
+from flask_socketio import SocketIO, emit
 from utils import requires_auth
 
 from camera import Camera
@@ -62,6 +62,4 @@ def command():
     return "done"
 
 if __name__ == '__main__':
-    socketio.run(app, host='0.0.0.0', port=5000,
-                 policy_server=False,
-                 transports='websocket, xhr-polling, xhr-multipart')
+    socketio.run(app, host='0.0.0.0', port=5000, debug=True)
