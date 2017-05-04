@@ -21,7 +21,7 @@ stream_handler = logging.StreamHandler()
 stream_handler.setLevel(logging.INFO)
 app.logger.addHandler(stream_handler)
 
-camera = Camera()
+cameras = {0: Camera(0), 1: Camera(1)}
 launcher = LauncherController()
 
 
@@ -35,7 +35,7 @@ def index():
 def stream(stream_id):
     data = {
         'id': stream_id,
-        'raw': 'data:image/jpeg;base64,' + camera.get_frame_base64(),
+        'raw': 'data:image/jpeg;base64,' + cameras[stream_id].get_frame_base64(),
         'timestamp': time.time()
     }
 

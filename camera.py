@@ -12,34 +12,37 @@ except ImportError:
     import cv
     CV_VER = 1
 
+
 class Camera(object):
-    thread = None  # background thread that reads frames from camera
-    frame = None  # current frame is stored here by background thread
-    last_access = 0  # time of last client access to the camera
+
+    def __init__(self, dev_id=0):
+        self.dev_id = dev_id
+        self.thread = None  # background thread that reads frames from camera
+        self.frame = None  # current frame is stored here by background thread
+        self.last_access = 0  # time of last client access to the camera
 
     def initialize(self):
-        if Camera.thread is None:
+        if self.thread is None:
             # start background frame thread
-            Camera.thread = threading.Thread(target=self._thread)
-            Camera.thread.start()
+            self.thread = threading.Thread(target=self._thread)
+            self.thread.start()
 
             # wait until frames start to be available
             while self.frame is None:
                 time.sleep(0)
 
     def get_frame(self):
-        Camera.last_access = time.time()
+        self.last_access = time.time()
         self.initialize()
         return self.frame
 
     def get_frame_base64(self):
         f = self.get_frame()
         return base64.b64encode(f)
-    
-    @classmethod
-    def _thread(cls):
+
+    def _thread(self):
         if CV_VER == 2:
-            cam = cv2.VideoCapture(0)
+            cam = cv2.VideoCapture(self.dev_id)
             while True:
                 if cam.isOpened():
                     success, image = cam.read()
@@ -50,30 +53,29 @@ class Camera(object):
                         small = cv2.resize(image, (0,0), fx=0.5, fy=0.5)
                         ret, jpeg = cv2.imencode('.jpg', small)
                         if ret:
-                            cls.frame = jpeg.tostring()
+                            self.frame = jpeg.tostring()
 
                     # if there hasn't been any clients asking for frames in
                     # the last 10 seconds stop the thread
-                    if time.time() - cls.last_access > 10:
+                    if time.time() - self.last_access > 10:
                         break
                 time.sleep(1.0 / 30.0)
             cam.release()
 
         else:
-            cam = cv.CaptureFromCAM(0)
+            cam = cv.CaptureFromCAM(self.dev_id)
             while True:
                 image = cv.QueryFrame(cam)
                 cv.SaveImage("/dev/shm/frame.jpg", image)
                 with open("/dev/shm/frame.jpg") as f:
-                    cls.frame = f.read()
+                    self.frame = f.read()
 
                     # if there hasn't been any clients asking for frames in
                     # the last 10 seconds stop the thread
-                    if time.time() - cls.last_access > 10:
+                    if time.time() - self.last_access > 10:
                         break
                 time.sleep(1.0 / 30.0)
-
-        cls.thread = None
+        self.thread = None
 
 
 if __name__ == "__main__":
