@@ -67,3 +67,4 @@ function makeStream(io, canvas_id, fps_id, stream_id) {
 }
 
 makeStream(io, "camera_canvas_1", "fps_counter_1", "0");
+makeStream(io, "camera_canvas_2", "fps_counter_2", "0");
