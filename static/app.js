@@ -1,13 +1,12 @@
-(function(io) {
-    var FPS_WEIGHT = 0.1;
+function makeStream(io, canvas_id, fps_id, stream_id) {
     socket = io.connect();
 
-    var canvas = $("#camera_canvas")[0];
+    var canvas = $("#" + canvas_id)[0];
 
     stream = {
         startTime: new Date().getTime(),
         frameCt: 0,
-        fps: $("#fps_counter")[0],
+        fps: $("#" + canvas_id)[0],
         context: canvas.getContext('2d'),
         canvas: canvas,
     };
@@ -65,4 +64,6 @@
         stream.fps.innerText = result;
     }, 100 );
 
-})( io );
+}
+
+makeStream(io, "camera_canvas_1", "fps_counter_1", "0");
