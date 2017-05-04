@@ -34,63 +34,63 @@
     </style>
 
     <script type="text/javascript">
-      function send_command(cmd) {
-         $.post("{{ url_for('command') }}", {"command_id" : cmd}, function( data ) {});
+      function send_rocket_command(cmd) {
+         $.post("{{ url_for('rocket') }}", {"command_id" : cmd}, function( data ) {});
       }
 
       $(function(){
          $(function(){
             $('#up').on('click', function(e) {
-               send_command("up");
+               send_rocket_command("up");
             });
          });
 
          $(function(){
             $('#down').on('click', function(e) {
-               send_command("down");
+               send_rocket_command("down");
             });
          });
 
          $(function(){
             $('#left').on('click', function(e) {
-               send_command("left");
+               send_rocket_command("left");
             });
          });
 
          $(function(){
             $('#right').on('click', function(e) {
-               send_command("right");
+               send_rocket_command("right");
             });
          });
 
          $(function(){
             $('#fire').on('click', function(e) {
-               send_command("fire");
+               send_rocket_command("fire");
             });
          });
 
          $(document).keydown(function(e) {
             switch(e.which) {
                case 37: // left
-               send_command("left");
+               send_rocket_command("left");
                break;
 
                case 38: // up
-               send_command("up");
+               send_rocket_command("up");
                break;
 
                case 39: // right
-               send_command("right");
+               send_rocket_command("right");
                break;
 
                case 40: // down
-               send_command("down");
+               send_rocket_command("down");
                break;
 
                case 13: // enter
                case 32: // space
                case 70: // 'f'
-               send_command("fire");
+               send_rocket_command("fire");
                break;
 
                default: return; // exit this handler for other keys
