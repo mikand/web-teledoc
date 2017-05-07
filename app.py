@@ -77,7 +77,7 @@ def car():
     if steering not in ["left", "right", "none"]:
         return "error"
 
-    motors.do_step(drection, steering, duration=2.0)
+    motors.do_step(direction, steering, duration=2.0)
 
     return "done"
 

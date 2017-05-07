@@ -38,34 +38,69 @@
          $.post("{{ url_for('rocket') }}", {"command_id" : cmd}, function( data ) {});
       }
 
+      function send_motor_command(dirextion, steering) {
+         $.post("{{ url_for('car) }}", {"direction" : direction, "steering": steering}, function( data ) {});
+      }
+
       $(function(){
          $(function(){
-            $('#up').on('click', function(e) {
+            $('#rocket-up').on('click', function(e) {
                send_rocket_command("up");
             });
          });
 
          $(function(){
-            $('#down').on('click', function(e) {
+            $('#rocket-down').on('click', function(e) {
                send_rocket_command("down");
             });
          });
 
          $(function(){
-            $('#left').on('click', function(e) {
+            $('#rocket-left').on('click', function(e) {
                send_rocket_command("left");
             });
          });
 
          $(function(){
-            $('#right').on('click', function(e) {
+            $('#rocket-right').on('click', function(e) {
                send_rocket_command("right");
             });
          });
 
          $(function(){
-            $('#fire').on('click', function(e) {
+            $('#rocket-fire').on('click', function(e) {
                send_rocket_command("fire");
+            });
+         });
+
+      // Motors
+         $(function(){
+            $('#motor-up').on('click', function(e) {
+               send_motor_command("fwd", "none");
+            });
+         });
+
+         $(function(){
+            $('#motor-down').on('click', function(e) {
+               send_motor_command("bwd", "none");
+            });
+         });
+
+         $(function(){
+            $('#motor-left').on('click', function(e) {
+               send_motor_command("fwd", "left");
+            });
+         });
+
+         $(function(){
+            $('#motor-right').on('click', function(e) {
+               send_motor_command("fwd", "right");
+            });
+         });
+
+         $(function(){
+            $('#motor-fire').on('click', function(e) {
+               send_motor_command("fire");
             });
          });
 
@@ -129,24 +164,47 @@
         </div>
 
         <div class="col-md-3">
+          Rocket Launcher:
           <table border="0" class="center" width="100%">
             <tr>
               <td width="33%">&nbsp;</td>
-              <td width="33%"><input style="width: 100%" class="btn btn-lg btn-success"  id="up" name="up" type="button" value="Up" \></td>
+              <td width="33%"><input style="width: 100%" class="btn btn-lg btn-success"  id="rocket-up" name="up" type="button" value="Up" \></td>
               <td width="33%">&nbsp;</td>
             <tr>
             <tr>
-              <td width="33%"><input style="width: 100%" class="btn btn-lg btn-success"  id="left" name="left" type="button" value="Left" \></td>
-              <td width="33%"><input style="width: 100%" class="btn btn-lg btn-danger"  id="fire" name="fire" type="button" value="Fire" \></td>
-              <td width="33%"><input style="width: 100%" class="btn btn-lg btn-success"  id="right" name="right" type="button" value="Right" \></td>
+              <td width="33%"><input style="width: 100%" class="btn btn-lg btn-success"  id="rocket-left" name="left" type="button" value="Left" \></td>
+              <td width="33%"><input style="width: 100%" class="btn btn-lg btn-danger"  id="rocket-fire" name="fire" type="button" value="Fire" \></td>
+              <td width="33%"><input style="width: 100%" class="btn btn-lg btn-success"  id="rocket-right" name="right" type="button" value="Right" \></td>
             <tr>
             <tr>
               <td width="33%">&nbsp;</td>
-              <td width="33%"><input style="width: 100%" class="btn btn-lg btn-success"  id="down" name="down" type="button" value="Down" \></td>
+              <td width="33%"><input style="width: 100%" class="btn btn-lg btn-success"  id="rocket-down" name="down" type="button" value="Down" \></td>
+              <td width="33%">&nbsp;</td>
+            <tr>
+          </table>
+
+          <br />
+
+          Movement:
+          <table border="0" class="center" width="100%">
+            <tr>
+              <td width="33%">&nbsp;</td>
+              <td width="33%"><input style="width: 100%" class="btn btn-lg btn-success"  id="motor-up" name="up" type="button" value="Up" \></td>
+              <td width="33%">&nbsp;</td>
+            <tr>
+            <tr>
+              <td width="33%"><input style="width: 100%" class="btn btn-lg btn-success"  id="motor-left" name="left" type="button" value="Left" \></td>
+              <td width="33%"><input style="width: 100%" class="btn btn-lg btn-danger"  id="motor-fire" name="fire" type="button" value="Fire" \></td>
+              <td width="33%"><input style="width: 100%" class="btn btn-lg btn-success"  id="motor-right" name="right" type="button" value="Right" \></td>
+            <tr>
+            <tr>
+              <td width="33%">&nbsp;</td>
+              <td width="33%"><input style="width: 100%" class="btn btn-lg btn-success"  id="motor-down" name="down" type="button" value="Down" \></td>
               <td width="33%">&nbsp;</td>
             <tr>
           </table>
         </div>
+
       </div><!-- /.container -->
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.7.3/socket.io.js"></script>
