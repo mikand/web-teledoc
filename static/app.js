@@ -72,9 +72,11 @@ function launchStreams(io, streams) {
     }
 }
 
-streams = {
-    0 : makeStream(io, "camera_canvas_1", "fps_counter_1", 0),
-    1 : makeStream(io, "camera_canvas_2", "fps_counter_2", 1)
-};
+$(document).ready(function() {
+    streams = {
+        0 : makeStream(io, "camera_canvas_1", "fps_counter_1", 0),
+        1 : makeStream(io, "camera_canvas_2", "fps_counter_2", 1)
+    };
 
-launchStreams(io, streams);
+    launchStreams(io, streams);
+});

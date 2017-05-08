@@ -7,8 +7,10 @@
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css"/>
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css"/>
     <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.7.3/socket.io.js"></script>
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
 
-    <title>Web TeleDOC</title>
+    <title>Car TeleDOC</title>
 
     <style type="text/css">
       .center {
@@ -38,8 +40,10 @@
          $.post("{{ url_for('rocket') }}", {"command_id" : cmd}, function( data ) {});
       }
 
+      socket = io.connect();
       function send_motor_command(direction, steering) {
-         $.post("{{ url_for('car') }}", {"direction" : direction, "steering": steering}, function( data ) {});
+      //$.post("{{ url_for('car') }}", {"direction" : direction, "steering": steering}, function( data ) {});
+        socket.emit("motor", {"direction": direction, "steering" : steering});
       }
 
       $(function(){
@@ -206,8 +210,5 @@
         </div>
 
       </div><!-- /.container -->
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.7.3/socket.io.js"></script>
-    <script src="{{ url_for('static', filename='app.js') }}"></script>
   </body>
 </html>
