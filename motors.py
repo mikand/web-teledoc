@@ -1,5 +1,6 @@
 import time
 import atexit
+import threading
 
 from Adafruit_MotorHAT import Adafruit_MotorHAT, Adafruit_DCMotor
 
@@ -26,24 +27,53 @@ class MotorsController(object):
             MotorsController.mhat = initializeHat()
         self.speed_motor = MotorsController.mhat.getMotor(1)
         self.steering_motor = MotorsController.mhat.getMotor(2)
+        self.thread = None
+        self.movement_authority = 0
+        self.current_direction = None
+        self.desired_direction = None
+        self.current_steering = None
+        self.desired_steering = None
+        self.speed = 180
+
+    def _thread(self):
+        while True:
+            if time.time() <= self.movement_authority:
+                if self.current_steering != self.desired_steering:
+                    if self.desired_steering == "left":
+                        self.steering_motor.run(Adafruit_MotorHAT.FORWARD)
+                        self.steering_motor.setSpeed(255)
+                    elif self.desired_steering == "right":
+                        self.steering_motor.run(Adafruit_MotorHAT.BACKWARD)
+                        self.steering_motor.setSpeed(255)
+                    elif self.desired_steering == "none":
+                        self.steering_motor.run(Adafruit_MotorHAT.RELEASE)
+                    self.current_steering = self.desired_steering
+
+                if self.current_direction != self.desired_direction:
+                    if self.desired_direction == "fwd":
+                        self.speed_motor.run(Adafruit_MotorHAT.FORWARD)
+                        self.speed_motor.setSpeed(self.speed)
+                    elif self.desired_direction == "bwd":
+                        self.speed_motor.run(Adafruit_MotorHAT.BACKWARD)
+                        self.speed_motor.setSpeed(self.speed)
+                    elif self.desired_direction == "none":
+                        self.speed_motor.run(Adafruit_MotorHAT.RELEASE)
+                    self.current_direction = self.desired_direction
+                time.sleep(0.2)
+            else:
+                self.steering_motor.run(Adafruit_MotorHAT.RELEASE)
+                self.speed_motor.run(Adafruit_MotorHAT.RELEASE)
+                self.current_direction = None
+                self.current_steering = None
+                break
+        self.thread = None
+
 
     def do_step(self, direction, steering, duration, speed=200):
-        if direction == "fwd":
-            self.speed_motor.run(Adafruit_MotorHAT.FORWARD)
-            self.speed_motor.setSpeed(speed)
-        elif direction == "bwd":
-            self.speed_motor.run(Adafruit_MotorHAT.BACKWARD)
-            self.speed_motor.setSpeed(speed)
-
-
-        if steering == "left":
-            self.steering_motor.run(Adafruit_MotorHAT.FORWARD)
-            self.steering_motor.setSpeed(255)
-        elif steering == "right":
-            self.steering_motor.run(Adafruit_MotorHAT.BACKWARD)
-            self.steering_motor.setSpeed(255)
-
-        time.sleep(duration)
-
-        self.steering_motor.run(Adafruit_MotorHAT.RELEASE)
-        self.speed_motor.run(Adafruit_MotorHAT.RELEASE)
+        self.desired_direction = direction
+        self.desired_steering = steering
+        self.speed = speed
+        self.movement_authority = time.time() + duration
+        if self.thread is None:
+            threading.Thread(target=self._thread)
+            self.thread.start()
