@@ -48,17 +48,16 @@ def stream(stream_id):
 
 @socketio.on('motor')
 def motor(command):
-    direction = command.direction
-    steering = command.steering
+    direction = command["direction"]
+    steering = command["steering"]
 
     if direction not in ["fwd", "bwd"]:
-        return "error"
-    if steering not in ["left", "right", "none"]:
-        return "error"
-
-    motors.do_step(direction, steering, duration=1.0)
-
-    return "done"
+        emit('motor', 'error1')
+    elif steering not in ["left", "right", "none"]:
+        emit('motor', 'error2')
+    else:
+        motors.do_step(direction, steering, duration=1.0)
+        emit('motor', 'done')
 
 
 @app.route('/rocket', methods=["POST"])
