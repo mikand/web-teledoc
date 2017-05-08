@@ -38,8 +38,8 @@
          $.post("{{ url_for('rocket') }}", {"command_id" : cmd}, function( data ) {});
       }
 
-      function send_motor_command(dirextion, steering) {
-         $.post("{{ url_for('car) }}", {"direction" : direction, "steering": steering}, function( data ) {});
+      function send_motor_command(direction, steering) {
+         $.post("{{ url_for('car') }}", {"direction" : direction, "steering": steering}, function( data ) {});
       }
 
       $(function(){
@@ -107,19 +107,19 @@
          $(document).keydown(function(e) {
             switch(e.which) {
                case 37: // left
-               send_rocket_command("left");
+               send_motor_command("fwd", "left");
                break;
 
                case 38: // up
-               send_rocket_command("up");
+               send_motor_command("fwd", "none");
                break;
 
                case 39: // right
-               send_rocket_command("right");
+               send_motor_command("fwd", "right");
                break;
 
                case 40: // down
-               send_rocket_command("down");
+               send_motor_command("bwd", "none");
                break;
 
                case 13: // enter

@@ -44,3 +44,6 @@ class MotorsController(object):
             self.steering_motor.setSpeed(255)
 
         time.sleep(duration)
+
+        self.steering_motor.run(Adafruit_MotorHAT.RELEASE)
+        self.speed_motor.run(Adafruit_MotorHAT.RELEASE)
