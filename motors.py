@@ -75,5 +75,5 @@ class MotorsController(object):
         self.speed = speed
         self.movement_authority = time.time() + duration
         if self.thread is None:
-            threading.Thread(target=self._thread)
+            self.thread = threading.Thread(target=self._thread)
             self.thread.start()
