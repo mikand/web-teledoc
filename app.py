@@ -6,8 +6,8 @@ import time
 import logging
 
 from flask import Flask, render_template, Response, request
-from flask_socketio import SocketIO, emit
-from utils import requires_auth
+from flask_socketio import SocketIO, emit, disconnect
+from utils import requires_auth, socket_requires_auth
 
 from camera import Camera
 from controller import LauncherController
@@ -16,8 +16,6 @@ from motors import MotorsController
 app = Flask(__name__)
 socketio = SocketIO(app)
 
-cameras = {}
-
 stream_handler = logging.StreamHandler()
 stream_handler.setLevel(logging.INFO)
 app.logger.addHandler(stream_handler)
@@ -25,7 +23,10 @@ app.logger.addHandler(stream_handler)
 cameras = {"0" : Camera(0), "1" : Camera(1)}
 launcher = LauncherController()
 motors = MotorsController()
+rtts = {}
 
+def get_client_id():
+    return 0
 
 @app.route('/')
 @requires_auth
@@ -33,7 +34,26 @@ def index():
     """Video streaming home page."""
     return render_template('index.html')
 
+@socketio.on('connected')
+def connected():
+    rtts[get_client_id()] = 1
+
+@socketio.on('disconnect')
+def disconnect():
+    try:
+        del rtts[get_client_id()]
+    except KeyError:
+        pass
+        
+
+@socketio.on('rttpong')
+@socket_requires_auth
+def pong(data):
+    rtts[get_client_id()] = min((time.time() - data["timestamp"]), 1)
+    emit('rttpong', 'done')
+
 @socketio.on('stream')
+@socket_requires_auth
 def stream(stream_id):
     if stream_id in cameras:
         data = {
@@ -47,7 +67,9 @@ def stream(stream_id):
 
 
 @socketio.on('motor')
+@socket_requires_auth
 def motor(command):
+    emit('rttping', {"timestamp": time.time()})
     direction = command["direction"]
     steering = command["steering"]
 
@@ -56,9 +78,11 @@ def motor(command):
     elif steering not in ["left", "right", "none"]:
         emit('motor', 'error2')
     else:
-        motors.do_step(direction, steering, duration=1.0)
+        duration = 1
+        if get_client_id() in rtts:
+            duration = rtts[get_client_id()]
+        motors.do_step(direction, steering, duration=duration)
         emit('motor', 'done')
-
 
 @app.route('/rocket', methods=["POST"])
 @requires_auth
@@ -79,21 +103,6 @@ def rocket():
         raise KeyError("Unknown command provided")
     return "done"
 
-@app.route('/car', methods=["POST"])
-@requires_auth
-def car():
-    """car route."""
-    direction = request.form["direction"]
-    steering = request.form["steering"]
-
-    if direction not in ["fwd", "bwd"]:
-        return "error"
-    if steering not in ["left", "right", "none"]:
-        return "error"
-
-    motors.do_step(direction, steering, duration=1.0)
-
-    return "done"
 
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0', port=5000, debug=True)

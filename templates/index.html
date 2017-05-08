@@ -40,11 +40,17 @@
          $.post("{{ url_for('rocket') }}", {"command_id" : cmd}, function( data ) {});
       }
 
-      socket = io.connect();
+      motorSocket = io.connect();
+      // RTT estimation
+      motorSocket.on('rttping', function(data) {
+         console.info(data);
+         motorSocket.emit('rttpong', data);
+      });
+
       function send_motor_command(direction, steering) {
-      //$.post("{{ url_for('car') }}", {"direction" : direction, "steering": steering}, function( data ) {});
-        socket.emit("motor", {"direction": direction, "steering" : steering});
+        motorSocket.emit("motor", {"direction": direction, "steering" : steering});
       }
+
 
       $(function(){
          $(function(){
@@ -102,11 +108,6 @@
             });
          });
 
-         $(function(){
-            $('#motor-fire').on('click', function(e) {
-               send_motor_command("fire");
-            });
-         });
 
          $(document).keydown(function(e) {
             switch(e.which) {
@@ -198,7 +199,7 @@
             <tr>
             <tr>
               <td width="33%"><input style="width: 100%" class="btn btn-lg btn-success"  id="motor-left" name="left" type="button" value="Left" \></td>
-              <td width="33%"><input style="width: 100%" class="btn btn-lg btn-danger"  id="motor-fire" name="fire" type="button" value="Fire" \></td>
+              <td width="33%">&nbsp;</td>
               <td width="33%"><input style="width: 100%" class="btn btn-lg btn-success"  id="motor-right" name="right" type="button" value="Right" \></td>
             <tr>
             <tr>
