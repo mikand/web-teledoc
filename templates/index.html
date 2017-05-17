@@ -1,13 +1,13 @@
 <html>
   <head>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+    <script src="{{ url_for('static', filename='jquery.min.js') }}"></script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
-    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css"/>
-    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css"/>
-    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.7.3/socket.io.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.css') }}"/>
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap-theme.min.css') }}"/>
+    <script src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='socket.io.js') }}"></script>
     <script src="{{ url_for('static', filename='app.js') }}"></script>
 
     <title>Car TeleDOC</title>
@@ -40,18 +40,6 @@
          $.post("{{ url_for('rocket') }}", {"command_id" : cmd}, function( data ) {});
       }
 
-      motorSocket = io.connect();
-      // RTT estimation
-      motorSocket.on('rttping', function(data) {
-         console.info(data);
-         motorSocket.emit('rttpong', data);
-      });
-
-      function send_motor_command(direction, steering) {
-        motorSocket.emit("motor", {"direction": direction, "steering" : steering});
-      }
-
-
       $(function(){
          $(function(){
             $('#rocket-up').on('click', function(e) {
@@ -81,61 +69,6 @@
             $('#rocket-fire').on('click', function(e) {
                send_rocket_command("fire");
             });
-         });
-
-      // Motors
-         $(function(){
-            $('#motor-up').on('click', function(e) {
-               send_motor_command("fwd", "none");
-            });
-         });
-
-         $(function(){
-            $('#motor-down').on('click', function(e) {
-               send_motor_command("bwd", "none");
-            });
-         });
-
-         $(function(){
-            $('#motor-left').on('click', function(e) {
-               send_motor_command("fwd", "left");
-            });
-         });
-
-         $(function(){
-            $('#motor-right').on('click', function(e) {
-               send_motor_command("fwd", "right");
-            });
-         });
-
-
-         $(document).keydown(function(e) {
-            switch(e.which) {
-               case 37: // left
-               send_motor_command("fwd", "left");
-               break;
-
-               case 38: // up
-               send_motor_command("fwd", "none");
-               break;
-
-               case 39: // right
-               send_motor_command("fwd", "right");
-               break;
-
-               case 40: // down
-               send_motor_command("bwd", "none");
-               break;
-
-               case 13: // enter
-               case 32: // space
-               case 70: // 'f'
-               send_rocket_command("fire");
-               break;
-
-               default: return; // exit this handler for other keys
-            }
-            e.preventDefault(); // prevent the default action (scroll / move caret)
          });
       });
     </script>
@@ -193,19 +126,14 @@
           Movement:
           <table border="0" class="center" width="100%">
             <tr>
-              <td width="33%">&nbsp;</td>
+              <td width="33%"><input style="width: 100%" class="btn btn-lg btn-success"  id="motor-fwdleft" name="fwdleft" type="button" value="Fwd Left" \></td>
               <td width="33%"><input style="width: 100%" class="btn btn-lg btn-success"  id="motor-up" name="up" type="button" value="Up" \></td>
-              <td width="33%">&nbsp;</td>
+              <td width="33%"><input style="width: 100%" class="btn btn-lg btn-success"  id="motor-fwdright" name="fwdright" type="button" value="Fwd Right" \></td>
             <tr>
             <tr>
-              <td width="33%"><input style="width: 100%" class="btn btn-lg btn-success"  id="motor-left" name="left" type="button" value="Left" \></td>
-              <td width="33%">&nbsp;</td>
-              <td width="33%"><input style="width: 100%" class="btn btn-lg btn-success"  id="motor-right" name="right" type="button" value="Right" \></td>
-            <tr>
-            <tr>
-              <td width="33%">&nbsp;</td>
+              <td width="33%"><input style="width: 100%" class="btn btn-lg btn-success"  id="motor-bwdleft" name="bwdleft" type="button" value="Bwd Left" \></td>
               <td width="33%"><input style="width: 100%" class="btn btn-lg btn-success"  id="motor-down" name="down" type="button" value="Down" \></td>
-              <td width="33%">&nbsp;</td>
+              <td width="33%"><input style="width: 100%" class="btn btn-lg btn-success"  id="motor-bwdright" name="bwdright" type="button" value="Bwd Right" \></td>
             <tr>
           </table>
         </div>

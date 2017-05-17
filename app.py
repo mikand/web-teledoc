@@ -39,12 +39,12 @@ def connected():
     rtts[get_client_id()] = 1
 
 @socketio.on('disconnect')
-def disconnect():
+def unconnect():
     try:
         del rtts[get_client_id()]
     except KeyError:
         pass
-        
+
 
 @socketio.on('rttpong')
 @socket_requires_auth
@@ -73,7 +73,7 @@ def motor(command):
     direction = command["direction"]
     steering = command["steering"]
 
-    if direction not in ["fwd", "bwd"]:
+    if direction not in ["fwd", "bwd", "none"]:
         emit('motor', 'error1')
     elif steering not in ["left", "right", "none"]:
         emit('motor', 'error2')
