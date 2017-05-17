@@ -84,25 +84,24 @@ def motor(command):
         motors.do_step(direction, steering, duration=duration)
         emit('motor', 'done')
 
-@app.route('/rocket', methods=["POST"])
-@requires_auth
-def rocket():
-    """rocket route."""
-    command_id = request.form["command_id"]
-    if command_id == "up":
-        launcher.step_up()
-    elif command_id == "down":
-        launcher.step_down()
-    elif command_id == "left":
-        launcher.step_left()
-    elif command_id == "right":
-        launcher.step_right()
-    elif command_id == "fire":
-        launcher.fire()
-    else:
-        raise KeyError("Unknown command provided")
-    return "done"
+@socketio.on('rocket')
+@socket_requires_auth
+def rocket(data):
+    """rocket socket"""
+    emit('rttping', {"timestamp": time.time()})
+    command = data["command"]
 
+    if command not in ["stop", "up", "down", "right", "left", "fire"]:
+        emit('rocket', 'error1')
+    else:
+        if command == "fire":
+            launcher.fire()
+        else:
+            duration = 0.05
+            if get_client_id() in rtts:
+                duration = rtts[get_client_id()]
+            launcher.step(command, duration)
+        emit('rocket', 'done')
 
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0', port=5000, debug=True)

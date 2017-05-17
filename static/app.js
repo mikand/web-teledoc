@@ -1,16 +1,24 @@
-// Movement
 var keys = {"up" : false,
             "down" : false,
             "left" : false,
-            "right" : false};
+            "right" : false,
+            "rocket-up" : false,
+            "rocket-down" : false,
+            "rocket-left" : false,
+            "rocket-right" : false};
 
 var last_command_was_stop = false;
+var rocket_last_command_was_stop = false;
 
 var motorSocket = io.connect();
+var rocketSocket = io.connect();
 
 // RTT estimation
 motorSocket.on('rttping', function(data) {
     motorSocket.emit('rttpong', data);
+});
+rocketSocket.on('rttping', function(data) {
+    rocketSocket.emit('rttpong', data);
 });
 
 $(function(){
@@ -30,13 +38,40 @@ $(function(){
         if (keys["right"] && !keys["left"]) {
             steering = "right";
         }
-
         if ((!last_command_was_stop) || (direction != "none" || steering != "none")) {
             motorSocket.emit("motor", {"direction": direction, "steering" : steering});
             last_command_was_stop = (direction == "none" && steering == "none");
         }
+
+        // Rocket
+        var command = "stop";
+        if (keys["rocket-up"] + keys["rocket-down"] + keys["rock-left"] + keys["rocket-right"] > 1) {
+            command = "stop";
+        }
+        else if (keys["rocket-up"]) {
+            command = "up";
+        }
+        else if (keys["rocket-down"]) {
+            command = "down";
+        }
+        else if (keys["rocket-left"]) {
+            command = "left";
+        }
+        else if (keys["rocket-right"]) {
+            command = "right";
+        }
+        if ((!rocket_last_command_was_stop) || command != "stop") {
+            rocketSocket.emit("rocket", {"command": command});
+            rocket_last_command_was_stop = (command == "stop");
+        }
     },50);
 });
+
+
+function fire_rocket() {
+    rocketSocket.emit("rocket", {"command": "fire"});
+}
+
 
 $(document).keydown(function(e) {
     switch(e.which) {
@@ -136,6 +171,36 @@ $(function(){
         keys["right"] = false
         keys["down"] = false
     });
+
+
+    $('#rocket-up').on('mousedown', function(e) {
+        keys["rocket-up"] = true;
+    });
+    $('#rocket-up').on('mouseup', function(e) {
+        keys["rocket-up"] = false;
+    });
+    $('#rocket-down').on('mousedown', function(e) {
+        keys["rocket-down"] = true
+    });
+    $('#rocket-down').on('mouseup', function(e) {
+        keys["rocket-down"] = false
+    });
+    $('#rocket-left').on('mousedown', function(e) {
+        keys["rocket-left"] = true;
+    });
+    $('#rocket-left').on('mouseup', function(e) {
+        keys["rocket-left"] = false;
+    });
+    $('#rocket-right').on('mousedown', function(e) {
+        keys["rocket-right"] = true
+    });
+    $('#rocket-right').on('mouseup', function(e) {
+        keys["rocket-right"] = false
+    });
+    $('#rocket-fire').on('click', function(e) {
+        fire_rocket();
+    });
+
 });
 
 
@@ -144,15 +209,13 @@ $(document).keydown(function(e) {
     case 13: // enter
     case 32: // space
     case 70: // 'f'
-        send_rocket_command("fire");
+        fire_rocket();
         break;
 
     default: return; // exit this handler for other keys
     }
     e.preventDefault(); // prevent the default action (scroll / move caret)
 });
-
-
 
 
 // Cameras
