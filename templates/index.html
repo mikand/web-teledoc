@@ -40,30 +40,20 @@
     <div class="container">
       <div class="row">
         <div class="col-md-8">
-          <h5><small><span id="fps_counter_1"></span> fps</small></h5>
+          <h5><small><span id="fps"></span> fps</small></h5>
           <div class="cameraContainer">
             <div data-id="0" class="camera stream">
-              <canvas width="800" height="600" id="camera_canvas_1" class="camera"></canvas>
+              <canvas width="800" height="600" id="video_canvas" class="camera"></canvas>
             </div>
           </div>
-
-          <br />
-
-          <h5><small><span id="fps_counter_2"></span> fps</small></h5>
-          <div class="cameraContainer">
-            <div data-id="1" class="camera stream">
-              <canvas width="800" height="600" id="camera_canvas_2" class="camera"></canvas>
-            </div>
-          </div>
-
         </div>
-
 
         <div class="col-md-1" height="40px">
           &nbsp;
         </div>
 
         <div class="col-md-3">
+          <input style="width: 100%" class="btn btn-lg btn-success"  id="switch-camera" name="switch-camera" type="button" value="Switch Camera" \>
           Rocket Launcher:
           <table border="0" class="center" width="100%">
             <tr>

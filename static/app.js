@@ -12,6 +12,12 @@ var rocket_last_command_was_stop = false;
 
 var motorSocket = io.connect();
 var rocketSocket = io.connect();
+var videoSocket = io.connect();
+
+var currentCamera = 0; // Can be 0 or 1
+var stream = {startTime: new Date().getTime(),
+              frameCt: 0};
+
 
 // RTT estimation
 motorSocket.on('rttping', function(data) {
@@ -21,6 +27,61 @@ rocketSocket.on('rttping', function(data) {
     rocketSocket.emit('rttpong', data);
 });
 
+// Streams
+videoSocket.on('frame', function ( data ) {
+    // Each time we receive an image, request a new one for the desired stream
+    videoSocket.emit('stream', currentCamera);
+
+    img = new Image();
+    img.src = data.raw;
+
+    var canvas = $("#video_canvas")[0];
+    var ctx = canvas.getContext('2d');
+
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+    var size = 30;
+    var lw = 3;
+    var cx = canvas.width / 2;
+    var cy = canvas.height / 2;
+
+    ctx.beginPath();
+    ctx.moveTo(cx + size, cy);
+    ctx.lineTo(cx - size, cy);
+    ctx.lineWidth = lw;
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(cx, cy + size);
+    ctx.lineTo(cx, cy - size);
+    ctx.lineWidth = lw;
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(cx, cy, size*2/3, 0, 2 * Math.PI, false);
+    ctx.lineWidth = lw;
+    ctx.stroke();
+
+    stream.frameCt++;
+});
+$(function(){
+    videoSocket.emit('stream', currentCamera);
+});
+// Update fps
+setInterval( function () {
+    d = new Date().getTime(),
+    currentTime = ( d - stream.startTime ) / 1000,
+    result = Math.floor( ( stream.frameCt / currentTime ) );
+
+    if ( currentTime > 1 ) {
+        stream.startTime = new Date().getTime();
+        stream.frameCt = 0;
+    }
+    $("#fps")[0].innerText = result;
+}, 100 );
+
+
+// Controls
 $(function(){
     motorSocket.emit('motor', {"direction": "none", "steering" : "none"});
     setInterval(function() {
@@ -70,6 +131,10 @@ $(function(){
 
 function fire_rocket() {
     rocketSocket.emit("rocket", {"command": "fire"});
+}
+
+function switch_camera() {
+    currentCamera = (currentCamera + 1) % 2;
 }
 
 
@@ -201,6 +266,9 @@ $(function(){
         fire_rocket();
     });
 
+    $('#switch-camera').on('click', function(e) {
+        switch_camera();
+    });
 });
 
 
@@ -215,92 +283,4 @@ $(document).keydown(function(e) {
     default: return; // exit this handler for other keys
     }
     e.preventDefault(); // prevent the default action (scroll / move caret)
-});
-
-
-// Cameras
-
-function makeStream(io, canvas_id, fps_id, stream_id) {
-    stream = {
-        id: stream_id,
-        startTime: new Date().getTime(),
-        frameCt: 0,
-        fps: $("#" + fps_id)[0],
-        context: $("#" + canvas_id)[0].getContext('2d'),
-        canvas: $("#" + canvas_id)[0]
-    };
-
-    return stream;
-}
-
-
-
-function launchStreams(io, streams) {
-    socket = io.connect();
-
-    socket.on('frame', function ( data ) {
-        // Each time we receive an image, request a new one
-        socket.emit('stream', data.id);
-
-        stream = streams[data.id];
-
-        img = new Image();
-        img.src = data.raw;
-
-        var ctx = stream.context;
-
-        ctx.drawImage(img, 0, 0, stream.canvas.width, stream.canvas.height);
-
-        var size = 30;
-        var lw = 3;
-        var cx = stream.canvas.width / 2;
-        var cy = stream.canvas.height / 2;
-
-        ctx.beginPath();
-        ctx.moveTo(cx + size, cy);
-        ctx.lineTo(cx - size, cy);
-        ctx.lineWidth = lw;
-        ctx.stroke();
-
-        ctx.beginPath();
-        ctx.moveTo(cx, cy + size);
-        ctx.lineTo(cx, cy - size);
-        ctx.lineWidth = lw;
-        ctx.stroke();
-
-        ctx.beginPath();
-        ctx.arc(cx, cy, size*2/3, 0, 2 * Math.PI, false);
-        ctx.lineWidth = lw;
-        ctx.stroke();
-
-        stream.frameCt++;
-    });
-
-    for (var k in streams) {
-        socket.emit('stream', k);
-
-        stream = streams[k];
-        // Update fps (loop)
-        setInterval( function () {
-            d = new Date().getTime(),
-            currentTime = ( d - stream.startTime ) / 1000,
-            result = Math.floor( ( stream.frameCt / currentTime ) );
-
-            if ( currentTime > 1 ) {
-                stream.startTime = new Date().getTime();
-                stream.frameCt = 0;
-            }
-
-            stream.fps.innerText = result;
-        }, 100 );
-    }
-}
-
-$(document).ready(function() {
-    streams = {
-        0 : makeStream(io, "camera_canvas_1", "fps_counter_1", 0),
-        1 : makeStream(io, "camera_canvas_2", "fps_counter_2", 1)
-    };
-
-    launchStreams(io, streams);
 });

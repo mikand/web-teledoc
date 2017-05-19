@@ -55,6 +55,7 @@ def pong(data):
 @socketio.on('stream')
 @socket_requires_auth
 def stream(stream_id):
+    stream_id = str(stream_id)
     if stream_id in cameras:
         data = {
             'id': stream_id,
