@@ -25,6 +25,8 @@ launcher = LauncherController()
 motors = MotorsController()
 rtts = {}
 
+RTTS_INCREMENT = 1.15
+
 def get_client_id():
     return 0
 
@@ -60,7 +62,6 @@ def stream(stream_id):
         data = {
             'id': stream_id,
             'raw': 'data:image/jpeg;base64,' + cameras[stream_id].get_frame_base64(),
-            'timestamp': time.time()
         }
         emit('frame', data)
     else:
@@ -75,15 +76,15 @@ def motor(command):
     steering = command["steering"]
 
     if direction not in ["fwd", "bwd", "none"]:
-        emit('motor', 'error1')
+        print('ERROR in motor: wrog direction')
     elif steering not in ["left", "right", "none"]:
-        emit('motor', 'error2')
+        print('ERROR in motor: wrong steering')
     else:
         duration = 1
         if get_client_id() in rtts:
-            duration = rtts[get_client_id()]
+            duration = rtts[get_client_id()] * RTTS_INCREMENT
         motors.do_step(direction, steering, duration=duration)
-        emit('motor', 'done')
+
 
 @socketio.on('rocket')
 @socket_requires_auth
@@ -93,16 +94,15 @@ def rocket(data):
     command = data["command"]
 
     if command not in ["stop", "up", "down", "right", "left", "fire"]:
-        emit('rocket', 'error1')
+        print('ERROR in rocket: invalid command')
     else:
         if command == "fire":
             launcher.fire()
         else:
             duration = 0.05
             if get_client_id() in rtts:
-                duration = rtts[get_client_id()]
+                duration = rtts[get_client_id()] * RTTS_INCREMENT
             launcher.step(command, duration)
-        emit('rocket', 'done')
 
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0', port=5000, debug=True)

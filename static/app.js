@@ -17,7 +17,8 @@ var videoSocket = io.connect();
 var currentCamera = 0; // Can be 0 or 1
 var stream = {startTime: new Date().getTime(),
               frameCt: 0};
-
+var canvas = null;
+var ctx = null;
 
 // RTT estimation
 motorSocket.on('rttping', function(data) {
@@ -28,58 +29,83 @@ rocketSocket.on('rttping', function(data) {
 });
 
 // Streams
+var current_img = null;
+
 videoSocket.on('frame', function ( data ) {
     // Each time we receive an image, request a new one for the desired stream
     videoSocket.emit('stream', currentCamera);
 
-    img = new Image();
-    img.src = data.raw;
-
-    var canvas = $("#video_canvas")[0];
-    var ctx = canvas.getContext('2d');
-
-    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-    var size = 30;
-    var lw = 3;
-    var cx = canvas.width / 2;
-    var cy = canvas.height / 2;
-
-    ctx.beginPath();
-    ctx.moveTo(cx + size, cy);
-    ctx.lineTo(cx - size, cy);
-    ctx.lineWidth = lw;
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.moveTo(cx, cy + size);
-    ctx.lineTo(cx, cy - size);
-    ctx.lineWidth = lw;
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.arc(cx, cy, size*2/3, 0, 2 * Math.PI, false);
-    ctx.lineWidth = lw;
-    ctx.stroke();
-
-    stream.frameCt++;
-});
-$(function(){
-    videoSocket.emit('stream', currentCamera);
-});
-// Update fps
-setInterval( function () {
-    d = new Date().getTime(),
-    currentTime = ( d - stream.startTime ) / 1000,
-    result = Math.floor( ( stream.frameCt / currentTime ) );
-
-    if ( currentTime > 1 ) {
-        stream.startTime = new Date().getTime();
-        stream.frameCt = 0;
+    if (data.id == currentCamera) {
+	img = new Image();
+	img.stream_id = data.id;
+	img.onload = function(){
+	    stream.frameCt++;
+	    if (this.stream_id == currentCamera) {
+		current_img = this;
+	    }	
+	};
+	img.onerror = function(e){
+	    console.log('Error during loading image:', e);
+	};
+	img.src = data.raw;
     }
-    $("#fps")[0].innerText = result;
-}, 100 );
+});
 
+function drawImage() {
+    if (current_img != null && current_img.stream_id == currentCamera) {
+	//ctx.clearRect(0, 0, canvas.width, canvas.height);
+	ctx.drawImage(current_img, 0, 0, canvas.width, canvas.height);
+
+	if (currentCamera == 1) {
+	    var size = 30;
+	    var lw = 3;
+	    var cx = canvas.width / 2;
+	    var cy = canvas.height / 2;
+
+	    ctx.beginPath();
+	    ctx.moveTo(cx + size, cy);
+	    ctx.lineTo(cx - size, cy);
+	    ctx.lineWidth = lw;
+	    ctx.stroke();
+
+	    ctx.beginPath();
+	    ctx.moveTo(cx, cy + size);
+	    ctx.lineTo(cx, cy - size);
+	    ctx.lineWidth = lw;
+	    ctx.stroke();
+
+	    ctx.beginPath();
+	    ctx.arc(cx, cy, size*2/3, 0, 2 * Math.PI, false);
+	    ctx.lineWidth = lw;
+	    ctx.stroke();
+	}
+    }
+    setTimeout(drawImage, 10);
+}
+
+$(function(){
+    canvas = $("#video_canvas")[0];
+    ctx = canvas.getContext('2d');
+    var fps = $("#fps")[0];
+    
+    videoSocket.emit('stream', currentCamera);
+
+    //Draw image
+    drawImage();
+    
+    // Update fps
+    setInterval( function () {
+	d = new Date().getTime(),
+	currentTime = ( d - stream.startTime ) / 1000,
+	result = Math.floor( ( stream.frameCt / currentTime ) );
+
+	if ( currentTime > 1 ) {
+            stream.startTime = new Date().getTime();
+            stream.frameCt = 0;
+	}
+	fps.innerText = result;
+    }, 500 );
+});
 
 // Controls
 $(function(){
@@ -156,6 +182,25 @@ $(document).keydown(function(e) {
         keys["down"] = true;
         break;
 
+    case 65: //a
+	keys["rocket-left"] = true;
+	break;
+    case 83: //s
+	keys["rocket-down"] = true;
+	break;
+    case 68: //d
+	keys["rocket-right"] = true;
+	break;
+    case 87: //w
+	keys["rocket-up"] = true;
+	break;
+	
+    case 13: // enter
+    case 32: // space
+    case 70: // 'f'
+        fire_rocket();
+        break;
+
     default: return; // exit this handler for other keys
     }
     e.preventDefault(); // prevent the default action (scroll / move caret)
@@ -178,6 +223,19 @@ $(document).keyup(function(e) {
     case 40: // down
         keys["down"] = false;
         break;
+
+    case 65: //a
+	keys["rocket-left"] = false;
+	break;
+    case 83: //s
+	keys["rocket-down"] = false;
+	break;
+    case 68: //d
+	keys["rocket-right"] = false;
+	break;
+    case 87: //w
+	keys["rocket-up"] = false;
+	break;
 
     default: return; // exit this handler for other keys
     }
@@ -269,18 +327,4 @@ $(function(){
     $('#switch-camera').on('click', function(e) {
         switch_camera();
     });
-});
-
-
-$(document).keydown(function(e) {
-    switch(e.which) {
-    case 13: // enter
-    case 32: // space
-    case 70: // 'f'
-        fire_rocket();
-        break;
-
-    default: return; // exit this handler for other keys
-    }
-    e.preventDefault(); // prevent the default action (scroll / move caret)
 });

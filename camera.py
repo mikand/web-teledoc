@@ -66,8 +66,8 @@ class Camera(object):
                             self.frame = jpeg.tostring()
 
                     # if there hasn't been any clients asking for frames in
-                    # the last 10 seconds stop the thread
-                    if time.time() - self.last_access > 10:
+                    # the last 30 seconds stop the thread
+                    if time.time() - self.last_access > 30:
                         break
                 time.sleep(1.0 / 30.0)
             cam.release()
