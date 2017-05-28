@@ -1,12 +1,15 @@
+import os.path
+
 from functools import wraps
 from flask import request, Response
+
 
 
 def check_auth(username, password):
     """This function is called to check if a username /
     password combination is valid.
     """
-    with open("users.txt") as f:
+    with open(os.path.join(os.path.dirname(__file__), "users.txt")) as f:
         for l in f:
             l = l.strip()
             if l == ("%s:%s" % (username, password)):
