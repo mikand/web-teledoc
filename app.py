@@ -30,6 +30,11 @@ RTTS_INCREMENT = 1.15
 def get_client_id():
     return 0
 
+@app.route('/analoginput/<id_>/value')
+def datatest(id_):
+    return "%s : 94" % id_
+
+
 @app.route('/')
 @requires_auth
 def index():

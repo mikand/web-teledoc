@@ -5,23 +5,18 @@ import time
 import threading
 import base64
 
-CV_VER = 0
-try:
-    import cv2
-    CV_VER = 2
-except ImportError:
-    pass
+import pygame
+import pygame.camera
+from pygame.locals import *
 
-try:
-    import cv
-    CV_VER = 1
-except ImportError:
-    pass
+from cStringIO import StringIO
+from PIL import Image, ImageDraw, ImageFont
+resources_path = os.path.join(os.path.dirname(__file__), "resources")
 
-if CV_VER == 0:
-    from cStringIO import StringIO
-    from PIL import Image, ImageDraw, ImageFont
-    resources_path = os.path.join(os.path.dirname(__file__), "resources")
+pygame.camera.init()
+
+DEVICE = '/dev/video%s'
+SIZE = (640, 480)
 
 class Camera(object):
 
@@ -51,41 +46,26 @@ class Camera(object):
         return base64.b64encode(f)
 
     def _thread(self):
-        if CV_VER == 2:
-            cam = cv2.VideoCapture(self.dev_id)
+        try:
+            camera = pygame.camera.Camera(DEVICE % self.dev_id, SIZE)
+            camera.start()
             while True:
-                if cam.isOpened():
-                    success, image = cam.read()
-                    if success:
-                        # We are using Motion JPEG, but OpenCV defaults to capture raw images,
-                        # so we must encode it into JPEG in order to correctly display the
-                        # video stream.
-                        small = cv2.resize(image, (0,0), fx=0.5, fy=0.5)
-                        ret, jpeg = cv2.imencode('.jpg', small)
-                        if ret:
-                            self.frame = jpeg.tostring()
+                surf = camera.get_image()
+                data = pygame.image.tostring(surf, 'RGBA')
+                img = Image.frombytes('RGBA', SIZE, data)
+                buf = StringIO()
+                img.save(buf, format='JPEG')
+                self.frame = buf.getvalue()
 
-                    # if there hasn't been any clients asking for frames in
-                    # the last 30 seconds stop the thread
-                    if time.time() - self.last_access > 30:
-                        break
+                # if there hasn't been any clients asking for frames in
+                # the last 30 seconds stop the thread
+                if time.time() - self.last_access > 30:
+                    break
                 time.sleep(1.0 / 30.0)
-            cam.release()
+            camera.stop()
+        except SystemError as ex:
+            print(ex)
 
-        elif CV_VER == 1:
-            cam = cv.CaptureFromCAM(self.dev_id)
-            while True:
-                image = cv.QueryFrame(cam)
-                cv.SaveImage("/dev/shm/frame.jpg", image)
-                with open("/dev/shm/frame.jpg") as f:
-                    self.frame = f.read()
-
-                    # if there hasn't been any clients asking for frames in
-                    # the last 10 seconds stop the thread
-                    if time.time() - self.last_access > 10:
-                        break
-                time.sleep(1.0 / 30.0)
-        else:
             x, y = (0, 0)
             font = ImageFont.truetype(os.path.join(resources_path, "Helvetica.ttf"), 35)
             while True:
