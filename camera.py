@@ -5,21 +5,24 @@ import time
 import threading
 import base64
 
-CV_VER = 0
-try:
-    import cv2
-    CV_VER = 2
-except ImportError:
-    pass
+DEBUG = True
 
-try:
-    import cv
-    CV_VER = 1
-except ImportError:
-    pass
+CV_VER = 0
+if not DEBUG:
+    try:
+        import cv2
+        CV_VER = 2
+    except ImportError:
+        pass
+
+    try:
+        import cv
+        CV_VER = 1
+    except ImportError:
+        pass
 
 if CV_VER == 0:
-    from cStringIO import StringIO
+    from io import BytesIO as StringIO
     from PIL import Image, ImageDraw, ImageFont
     resources_path = os.path.join(os.path.dirname(__file__), "resources")
 
@@ -48,7 +51,7 @@ class Camera(object):
 
     def get_frame_base64(self):
         f = self.get_frame()
-        return base64.b64encode(f)
+        return base64.b64encode(f).decode('utf-8')
 
     def _thread(self):
         if CV_VER == 2:

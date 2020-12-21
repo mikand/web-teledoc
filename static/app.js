@@ -42,7 +42,7 @@ videoSocket.on('frame', function ( data ) {
 	    stream.frameCt++;
 	    if (this.stream_id == currentCamera) {
 		current_img = this;
-	    }	
+	    }
 	};
 	img.onerror = function(e){
 	    console.log('Error during loading image:', e);
@@ -87,12 +87,12 @@ $(function(){
     canvas = $("#video_canvas")[0];
     ctx = canvas.getContext('2d');
     var fps = $("#fps")[0];
-    
+
     videoSocket.emit('stream', currentCamera);
 
     //Draw image
     drawImage();
-    
+
     // Update fps
     setInterval( function () {
 	d = new Date().getTime(),
@@ -194,7 +194,7 @@ $(document).keydown(function(e) {
     case 87: //w
 	keys["rocket-up"] = true;
 	break;
-	
+
     case 13: // enter
     case 32: // space
     case 70: // 'f'
