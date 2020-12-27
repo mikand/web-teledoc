@@ -20,7 +20,11 @@ stream_handler = logging.StreamHandler()
 stream_handler.setLevel(logging.INFO)
 app.logger.addHandler(stream_handler)
 
-cameras = {"0" : Camera(0), "1" : Camera(1)}
+camera_ids = Camera.get_available_cameras()
+cameras = {str(i) : Camera(i) for i in camera_ids}
+
+print(camera_ids)
+
 launcher = LauncherController()
 motors = MotorsController()
 rtts = {}
@@ -47,6 +51,10 @@ def unconnect():
     except KeyError:
         pass
 
+@socketio.on('list_cameras')
+@socket_requires_auth
+def list_cameras():
+    emit('cameras', camera_ids)
 
 @socketio.on('rttpong')
 @socket_requires_auth

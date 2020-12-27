@@ -5,23 +5,11 @@ import time
 import threading
 import base64
 
-DEBUG = True
+DEBUG = False
 
-CV_VER = 0
 if not DEBUG:
-    try:
-        import cv2
-        CV_VER = 2
-    except ImportError:
-        pass
-
-    try:
-        import cv
-        CV_VER = 1
-    except ImportError:
-        pass
-
-if CV_VER == 0:
+    import cv2
+else:
     from io import BytesIO as StringIO
     from PIL import Image, ImageDraw, ImageFont
     resources_path = os.path.join(os.path.dirname(__file__), "resources")
@@ -53,8 +41,22 @@ class Camera(object):
         f = self.get_frame()
         return base64.b64encode(f).decode('utf-8')
 
+    @staticmethod
+    def get_available_cameras():
+        if not DEBUG:
+            res = []
+            MAXID=10
+            for i in range(MAXID):
+                cam = cv2.VideoCapture(i)
+                if cam.isOpened():
+                    res.append(i)
+                cam.release()
+            return res
+        else:
+            return [0, 1]
+
     def _thread(self):
-        if CV_VER == 2:
+        if not DEBUG:
             cam = cv2.VideoCapture(self.dev_id)
             while True:
                 if cam.isOpened():
@@ -75,19 +77,6 @@ class Camera(object):
                 time.sleep(1.0 / 30.0)
             cam.release()
 
-        elif CV_VER == 1:
-            cam = cv.CaptureFromCAM(self.dev_id)
-            while True:
-                image = cv.QueryFrame(cam)
-                cv.SaveImage("/dev/shm/frame.jpg", image)
-                with open("/dev/shm/frame.jpg") as f:
-                    self.frame = f.read()
-
-                    # if there hasn't been any clients asking for frames in
-                    # the last 10 seconds stop the thread
-                    if time.time() - self.last_access > 10:
-                        break
-                time.sleep(1.0 / 30.0)
         else:
             x, y = (0, 0)
             font = ImageFont.truetype(os.path.join(resources_path, "Helvetica.ttf"), 35)

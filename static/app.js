@@ -14,11 +14,16 @@ var motorSocket = io.connect();
 var rocketSocket = io.connect();
 var videoSocket = io.connect();
 
-var currentCamera = 0; // Can be 0 or 1
+var currentCameraIdx = 0;
+var cameras = Array();
 var stream = {startTime: new Date().getTime(),
               frameCt: 0};
 var canvas = null;
 var ctx = null;
+var lastFrame = 0;
+var TARGET_FPS = 30;
+var TARGET_TIME_DIFF = (1000.0 / TARGET_FPS);
+var TIME_TOLERANCE = 28;
 
 // RTT estimation
 motorSocket.on('rttping', function(data) {
@@ -28,19 +33,24 @@ rocketSocket.on('rttping', function(data) {
     rocketSocket.emit('rttpong', data);
 });
 
+
 // Streams
 var current_img = null;
 
-videoSocket.on('frame', function ( data ) {
-    // Each time we receive an image, request a new one for the desired stream
-    videoSocket.emit('stream', currentCamera);
+videoSocket.on('cameras', function ( data ) {
+    cameras = data;
+    if (cameras.length > 0) {
+        videoSocket.emit('stream', cameras[currentCameraIdx]);
+    }
+});
 
-    if (data.id == currentCamera) {
+videoSocket.on('frame', function ( data ) {
+    if (data.id == cameras[currentCameraIdx]) {
 	img = new Image();
 	img.stream_id = data.id;
 	img.onload = function(){
 	    stream.frameCt++;
-	    if (this.stream_id == currentCamera) {
+	    if (this.stream_id == cameras[currentCameraIdx]) {
 		current_img = this;
 	    }
 	};
@@ -49,14 +59,28 @@ videoSocket.on('frame', function ( data ) {
 	};
 	img.src = data.raw;
     }
+
+    // Each time we receive an image, request a new one for the desired stream
+    var now = new Date().getTime();
+    var missing = TARGET_TIME_DIFF - (now - lastFrame);
+    if (missing <= TIME_TOLERANCE) {
+        lastFrame = now;
+        videoSocket.emit('stream', cameras[currentCameraIdx]);
+    }
+    else {
+        setTimeout(function(){
+            videoSocket.emit('stream', cameras[currentCameraIdx]);
+            lastFrame = now;
+        }, missing);
+    }
 });
 
 function drawImage() {
-    if (current_img != null && current_img.stream_id == currentCamera) {
+    if (current_img != null && current_img.stream_id == cameras[currentCameraIdx]) {
 	//ctx.clearRect(0, 0, canvas.width, canvas.height);
 	ctx.drawImage(current_img, 0, 0, canvas.width, canvas.height);
 
-	if (currentCamera == 1) {
+	if (cameras[currentCameraIdx] == 1) {
 	    var size = 30;
 	    var lw = 3;
 	    var cx = canvas.width / 2;
@@ -88,7 +112,7 @@ $(function(){
     ctx = canvas.getContext('2d');
     var fps = $("#fps")[0];
 
-    videoSocket.emit('stream', currentCamera);
+    videoSocket.emit('list_cameras');
 
     //Draw image
     drawImage();
@@ -160,7 +184,9 @@ function fire_rocket() {
 }
 
 function switch_camera() {
-    currentCamera = (currentCamera + 1) % 2;
+    if (cameras.length > 0) {
+        currentCameraIdx = (currentCameraIdx + 1) % cameras.length;
+    }
 }
 
 
